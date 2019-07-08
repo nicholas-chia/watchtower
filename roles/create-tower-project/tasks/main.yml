@@ -1,0 +1,14 @@
+---
+# tasks file for create-tower-project
+- name: Create project in tower
+  command: tower-cli project create --name {{ id + '_project'}} --organization {{ org }} --scm-type git --scm-url {{ repo }}
+  debugger: on_failed
+  when: tower_scm_cred is undefined
+
+- name: Create project in tower
+  command: tower-cli project create --name {{ id + '_project'}} --organization {{ org }} --scm-type git --scm-url {{ repo }} --scm-credential {{ tower_scm_cred  }}
+  debugger: on_failed
+  when: tower_scm_cred is defined
+
+# - name: sleep for 1 seconds for project git clone to complete
+#   wait_for: timeout=1

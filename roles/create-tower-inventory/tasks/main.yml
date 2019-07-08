@@ -1,0 +1,5 @@
+---
+# tasks file for create-tower-inventory
+- name: Create inventory in tower
+  command: tower-cli inventory create --name {{ id + '_inventory'}} --organization {{ org }}
+  debugger: on_failed

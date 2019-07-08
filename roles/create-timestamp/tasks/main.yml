@@ -1,0 +1,14 @@
+---
+# tasks file for create-timestamp
+- name: create timestamp fact with current date time
+  set_fact:
+    timestamp_fact: "{{ lookup('pipe','date +%Y%m%d%H%M%S') }}"
+  debugger: on_failed
+  tags:
+    - always
+    - create
+
+- name: prints the timestamp fact created from the previous task
+  debug:
+    var: timestamp_fact
+    verbosity: 4

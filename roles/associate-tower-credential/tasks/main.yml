@@ -1,0 +1,6 @@
+---
+# tasks file for associate-tower-credential
+- name: Add credential to existing Tower Job Template
+  command: tower-cli job_template associate_credential --job-template {{ id + type + '_job_template'}} --credential {{ item }}
+  with_items: "{{ tower_credential }}"
+  debugger: on_failed

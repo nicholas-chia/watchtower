@@ -1,0 +1,87 @@
+---
+- name: Create a provision and teardown schedule for Lightbulb Workshop Lab
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Create timestamp fact with current date time
+      set_fact:
+        timestamp_fact: "{{ lookup('pipe','date +%Y%m%d%H%M%S') }}"
+
+    - name: Create config yml file
+      vars:
+        id: "{{ timestamp_fact }}"
+      # this file decides the number of accounts to provision
+      # and contains all the extra vars needed for provision and teardown playbook
+      template: src=./config.j2 dest=./{{ id }}.yml
+
+  tags:
+      - timestamp
+      - always
+
+- name: Create tower project and inventory
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - ./vars/singapore.yml
+  vars:
+    id: "{{ timestamp_fact }}"
+    # use timestamp_fact as primary key for project, inventory, job-template names
+  roles:
+    - create-tower-project
+    - create-tower-inventory
+  tags:
+    - setup
+
+- name: Create a schedule for provisioning
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - ./vars/singapore.yml
+  vars:
+    id: "{{ timestamp_fact }}"
+    type: "_provision"
+    # use timestamp_fact as primary key for project, inventory, job-template names
+    path_playbook: "tools/aws_lab_setup/provision_lab.yml"
+    schedule_date: "{{ provision_date }}"
+  roles:
+    - create-tower-job-template
+    - associate-tower-credential
+    - create-tower-schedule
+  tags:
+    - provision
+
+- name: Create a schedule for teardown
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - ./vars/singapore.yml
+  vars:
+    id: "{{ timestamp_fact }}"
+    type: "_teardown"
+    # use timestamp_fact as primary key for project, inventory, job-template names
+    path_playbook: "tools/aws_lab_setup/teardown_lab.yml"
+    schedule_date: "{{ teardown_date }}"
+  roles:
+    - create-tower-job-template
+    - associate-tower-credential
+    - create-tower-schedule
+  tags:
+    - teardown
+
+- name: Clean up
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    id: "{{ timestamp_fact }}"
+  tasks:
+    - name: Remove the config yml file
+      file:
+        path: ./{{ id }}.yml
+        state: absent
+  tags:
+      - cleanup

@@ -1,0 +1,5 @@
+---
+# tasks file for create-tower-schedule
+- name: Create schedule for Job Template in Tower
+  command: tower-cli schedule create --name {{ id + type + '_job_schedule'}} --job-template {{ id + type + '_job_template'}} --rrule 'DTSTART:{{ schedule_date + 'Z' }} RRULE:FREQ=DAILY;INTERVAL=1;COUNT=1'
+  debugger: on_failed

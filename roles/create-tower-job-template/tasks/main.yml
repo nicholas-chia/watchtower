@@ -1,0 +1,9 @@
+---
+# tasks file for create-tower-job-template
+- name: Create job template in tower
+  command: tower-cli job_template create --name {{ id + type + '_job_template'}} --job-type run --inventory {{ id + '_inventory' }} --project {{ id + '_project' }} --playbook {{'"' + path_playbook + '"' }} --credential {{ jt_credential }} --forks 50 --extra-vars @{{ id }}.yml
+  debugger: on_failed
+  register: result
+  until: result.stdout.find("Resource changed.") != -1
+  retries: 10
+  delay: 5
